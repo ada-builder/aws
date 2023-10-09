@@ -17,8 +17,8 @@
     "deploy:prod:function": "yarn build && export AWS_PROFILE=default && sls -s prod deploy function"
   },
   "dependencies": {
-    "@ada-builder/aws-middleware": "^0.1.0",
     "@ada-builder/aws-dynamodb": "^0.1.0",
+    "@ada-builder/aws-middleware": "^0.1.0",
     "@ada-builder/aws-sockets": "^0.1.0",
     "@ada-builder/aws-user": "^0.1.0",
     "filenamify": "^6.0.0",

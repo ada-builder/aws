@@ -21,8 +21,8 @@
   },
   "license": "ISC",
   "dependencies": {
-    "@ada-builder/aws-middleware": "^0.1.0",
     "@ada-builder/aws-dynamodb": "^0.1.0",
+    "@ada-builder/aws-middleware": "^0.1.0",
     "lodash": "^4.17.21",
     "uuid": "^9.0.0"
   },
