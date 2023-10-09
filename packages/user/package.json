@@ -1,0 +1,36 @@
+{
+  "name": "@ada-builder/aws-user",
+  "version": "0.1.0",
+  "description": "",
+  "repository": "git@github.com:ada-builder/aws.git",
+  "author": {
+    "email": "ted@rebelpixel.ca",
+    "name": "Ted Sczelecki",
+    "url": "https://tedsczelecki.com"
+  },
+  "main": "dist/index.js",
+  "scripts": {
+    "clean": "rm -rf dist",
+    "dev": "yarn clean && tsc --build --watch",
+    "build": "rm -rf ./dist && tsc --build && sh scripts/moveFiles.sh",
+    "build:cleanup": "sh scripts/cleanup.sh",
+    "deploy:prod": "yarn build && export AWS_PROFILE=default && sls -s prod deploy ",
+    "deploy": "yarn build && yes | sls deploy && yarn build:cleanup",
+    "deploy:function": "yarn build && export AWS_PROFILE=default && sls deploy function",
+    "deploy:prod:function": "yarn build && export AWS_PROFILE=default && sls -s prod deploy function"
+  },
+  "license": "ISC",
+  "dependencies": {
+    "@ada-builder/aws-middleware": "^0.1.0",
+    "@ada-builder/aws-dynamodb": "^0.1.0",
+    "lodash": "^4.17.21",
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.104",
+    "@types/uuid": "^9.0.1",
+    "serverless-plugin-common-excludes": "^4.0.0",
+    "serverless-plugin-include-dependencies": "^5.0.0",
+    "typescript": "^4.8.3"
+  }
+}

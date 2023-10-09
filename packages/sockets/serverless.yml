@@ -1,0 +1,115 @@
+service: sockets
+
+plugins:
+  - serverless-plugin-common-excludes
+  - serverless-plugin-include-dependencies
+
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs16.x
+  stage: ${opt:stage, 'dev'}
+  region: us-east-1
+  environment:
+    APIG_ENDPOINT:
+      Fn::Join:
+        - ''
+        - - Ref: WebsocketsApi
+          - .execute-api.
+          - Ref: AWS::Region
+          - .amazonaws.com/
+          - ${self:provider.stage}
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:*
+      Resource:
+        - "arn:aws:dynamodb:us-east-1:*:table/Connections"
+        - "arn:aws:dynamodb:us-east-1:*:table/Connections/index/*"
+        - "arn:aws:dynamodb:us-east-1:*:table/Users"
+        - "arn:aws:dynamodb:us-east-1:*:table/Users/index/*"
+
+package:
+  individually: true
+  patterns:
+    - '!node_modules/**'
+    - '!node_modules/**/src/**'
+    - '!src/**'
+    - '!scripts/**'
+    - '!dist/**'
+    - '!layers/**'
+    - '!database/**'
+    - '!schema.prisma'
+    - '!tsconfig.json'
+    - '!tslint.json'
+    - 'prisma/**'
+    - 'node_modules/.prisma/**'
+
+functions:
+  websocket:
+    handler: dist/endpoints/websocket/connection.handler
+    package:
+      patterns:
+        - 'dist/endpoints/websocket/connection.js'
+    events:
+      - websocket:
+          # Handles new connection requests
+          route: $connect
+          # Only the '$connect' route supports an authorizer. The other routes
+          # are secured via the connection ID and therefore it should be handled
+          # like a session ID.
+
+      - websocket:
+          # Handles all unrouted messages
+          route: $default
+
+      - websocket:
+          route: ping
+
+      - websocket:
+          # Handles disconnect messages
+          route: $disconnect
+
+resources:
+  Outputs:
+    SocketsId:
+      Value:
+        Ref: WebsocketsApi
+      Export:
+        Name: SocketsId
+
+  Resources:
+    ConnectionsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        AttributeDefinitions:
+          - AttributeName: connectionId
+            AttributeType: S
+          - AttributeName: siteId
+            AttributeType: S
+          - AttributeName: userId
+            AttributeType: S
+        BillingMode: PAY_PER_REQUEST
+        KeySchema:
+          - AttributeName: connectionId
+            KeyType: HASH
+        SSESpecification:
+          SSEEnabled: true
+        TimeToLiveSpecification:
+          AttributeName: ttl
+          Enabled: true
+        TableName: Connections
+        GlobalSecondaryIndexes:
+          - IndexName: site-id-index
+            KeySchema:
+              - AttributeName: siteId
+                KeyType: HASH
+            Projection:
+              ProjectionType: 'ALL'
+          - IndexName: user-id-index
+            KeySchema:
+              - AttributeName: userId
+                KeyType: HASH
+            Projection:
+              ProjectionType: 'ALL'

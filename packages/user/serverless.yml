@@ -1,0 +1,118 @@
+service: user
+useDotenv: true
+
+plugins:
+  - serverless-plugin-common-excludes
+  - serverless-plugin-include-dependencies
+frameworkVersion: "3"
+
+provider:
+  name: aws
+  runtime: nodejs16.x
+  stage: ${opt:stage, 'dev'}
+  region: us-east-1
+  apiGateway:
+    restApiId: ${cf:api-${self:provider.stage}.ApiGatewayRestApiId}
+    restApiRootResourceId: ${cf:api-${self:provider.stage}.ApiGatewayRestApiResourceId}
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:RemoveItem
+        - dynamodb:BatchGetItem
+        - dynamodb:UpdateItem
+        - dynamodb:Query
+      Resource:
+        - "arn:aws:dynamodb:us-east-1:*:table/Users"
+        - "arn:aws:dynamodb:us-east-1:*:table/Users/index/*"
+        - "arn:aws:dynamodb:us-east-1:*:table/UserProviders"
+
+package:
+  individually: true
+  patterns:
+    - "!node_modules/**"
+    - "!node_modules/**/src/**"
+    - "!src/**"
+    - "!scripts/**"
+    - "!dist/**"
+    - "!layers/**"
+    - "!database/**"
+    - "!schema.prisma"
+    - "!tsconfig.json"
+    - "!tslint.json"
+    - prisma/**
+    - node_modules/.prisma/**
+
+functions:
+  login:
+    handler: dist/endpoints/users/login.handler
+    package:
+      patterns:
+        - 'dist/endpoints/users/login.js'
+    events:
+      - http:
+          path: /users/login
+          method: post
+          cors: true
+
+  createGuest:
+    handler: dist/endpoints/users/createGuest.handler
+    package:
+      patterns:
+        - 'dist/endpoints/users/createGuest.js'
+    events:
+      - http:
+          path: /users/guest
+          method: post
+          cors: true
+
+  updateActiveSite:
+    handler: dist/endpoints/users/updateActiveSite.handler
+    package:
+      patterns:
+        - 'dist/endpoints/users/updateActiveSite.js'
+    events:
+      - http:
+          path: /users/activeSite
+          method: post
+          cors: true
+
+
+resources:
+  Resources:
+    Users:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+          - AttributeName: email
+            AttributeType: S
+        BillingMode: PAY_PER_REQUEST
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        TableName: Users
+        GlobalSecondaryIndexes:
+          - IndexName: email-index
+            KeySchema:
+              - AttributeName: email
+                KeyType: HASH
+            Projection:
+              ProjectionType: 'ALL'
+    UserProviders:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        AttributeDefinitions:
+          - AttributeName: userId
+            AttributeType: S
+          - AttributeName: provider
+            AttributeType: S
+        BillingMode: PAY_PER_REQUEST
+        KeySchema:
+          - AttributeName: userId
+            KeyType: HASH
+          - AttributeName: provider
+            KeyType: RANGE
+        TableName: UserProviders

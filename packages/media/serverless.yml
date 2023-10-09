@@ -1,0 +1,216 @@
+service: media
+useDotenv: true
+
+plugins:
+  - serverless-plugin-common-excludes
+  - serverless-plugin-include-dependencies
+  - serverless-cf-vars
+
+package:
+  individually: true
+  excludeDevDependencies: true
+  patterns:
+    - '!node_modules/**'
+    - '!node_modules/**/src/**'
+    - '!src/**'
+    - '!scripts/**'
+    - '!dist/**'
+    - '!layers/**'
+    - '!database/**'
+    - '!schema.prisma'
+    - '!tsconfig.json'
+    - '!tslint.json'
+    - 'prisma/**'
+    - 'node_modules/.prisma/**'
+
+
+provider:
+  name: aws
+  runtime: nodejs16.x
+  stage: ${opt:stage, 'dev'}
+  region: us-east-1
+  environment:
+    MEDIA_CDN_BUCKET: ${env:MEDIA_CDN_BUCKET}
+    APIG_ENDPOINT:
+      Fn::Join:
+        - ''
+        - - ${cf:sockets-${self:provider.stage}.SocketsId}
+          - .execute-api.
+          - Ref: AWS::Region
+          - .amazonaws.com/
+          - ${self:provider.stage}
+  apiGateway:
+    restApiId: ${cf:api-${self:provider.stage}.ApiGatewayRestApiId}
+    restApiRootResourceId: ${cf:api-${self:provider.stage}.ApiGatewayRestApiResourceId}
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - 'execute-api:ManageConnections'
+        - 'sqs:*'
+      Resource:
+        - "*"
+    - Effect: Allow
+      Action:
+        - 's3:*'
+      Resource:
+        - "arn:aws:s3:::${env:MEDIA_CDN_BUCKET}/*"
+    - Effect: Allow
+      Action:
+        - dynamodb:*
+      Resource:
+        - "arn:aws:dynamodb:us-east-1:*:table/Connections"
+        - "arn:aws:dynamodb:us-east-1:*:table/Connections/index/*"
+        - "arn:aws:dynamodb:us-east-1:*:table/Media"
+        - "arn:aws:dynamodb:us-east-1:*:table/Media/index/*"
+        - "arn:aws:dynamodb:us-east-1:*:table/Users"
+        - "arn:aws:dynamodb:us-east-1:*:table/Users/index/*"
+
+layers:
+  sharp:
+    path: layers/sharp # required, path to layer contents on disk
+    name: sharp # optional, Deployed Lambda layer name
+    package:
+      patterns:
+        - "node_modules/**"
+    description: Sheeeerp
+    compatibleArchitectures:
+      - x86_64
+      - arm64
+    compatibleRuntimes:
+      - nodejs14.x
+      - nodejs16.x
+      - nodejs18.x
+    licenseInfo: Apache License 2.0
+    retain: false
+
+functions:
+
+  getAccountMedia:
+    handler: dist/endpoints/media/getAccountMedia.handler
+    package:
+      patterns:
+        - 'dist/endpoints/media/getAccountMedia.js'
+    events:
+      - http:
+          path: /media/account
+          method: get
+
+  getUserMedia:
+    handler: dist/endpoints/media/getUserMedia.handler
+    package:
+      patterns:
+        - 'dist/endpoints/media/getUserMedia.js'
+    events:
+      - http:
+          path: /media
+          method: get
+
+  postPresignedUploadUrl:
+    handler: dist/endpoints/media/postPresignedUploadUrl.handler
+    package:
+      patterns:
+        - 'dist/endpoints/media/postPresignedUploadUrl.js'
+    events:
+      - http:
+          path: /media/presigned-upload-url
+          method: post
+          cors: true
+
+  uploadFromUrl:
+    handler: dist/endpoints/media/uploadFromUrl.handler
+    package:
+      patterns:
+        - 'dist/endpoints/media/uploadFromUrl.js'
+        - '!node_modules/sharp/**'
+    layers:
+      - { Ref: SharpLambdaLayer }
+    events:
+      - http:
+          path: /media/upload-from-url
+          method: post
+          cors: true
+
+
+#  eventObjectAdded:
+#    handler: dist/events/eventObjectAdded.handler
+#    environment:
+#      IMAGE_PROCESSING_QUEUE_URL: { Ref: ImageProcessingQueue }
+#    package:
+#      patterns:
+#        - 'dist/events/eventObjectAdded.js'
+#    layers:
+#      - { Ref: SharpLambdaLayer }
+#    events:
+#      - s3:
+#          bucket: ${env:MEDIA_CDN_BUCKET}
+#          event: s3:ObjectCreated:*
+#          existing: true
+
+  imageResizeQueueConsumer:
+    handler: dist/events/imageResizeQueueConsumer.handler
+    package:
+      patterns:
+        - 'dist/events/imageResizeQueueConsumer.js'
+        - '!node_modules/sharp/**'
+    timeout: 10
+    memorySize: 2048
+    layers:
+      - { Ref: SharpLambdaLayer }
+    events:
+      - sqs:
+          arn:
+            Fn::GetAtt:
+              - ImageProcessingQueue
+              - Arn
+
+resources:
+  Resources:
+
+    ImageProcessingQueue:
+      Type: "AWS::SQS::Queue"
+      Properties:
+        QueueName: "ImageProcessingQueue"
+        VisibilityTimeout: 15
+
+    MediaTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+          - AttributeName: siteId
+            AttributeType: S
+          - AttributeName: userId
+            AttributeType: S
+          - AttributeName: key
+            AttributeType: S
+        BillingMode: PAY_PER_REQUEST
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        SSESpecification:
+          SSEEnabled: true
+        TimeToLiveSpecification:
+          AttributeName: ttl
+          Enabled: true
+        TableName: Media
+        GlobalSecondaryIndexes:
+          - IndexName: site-index
+            KeySchema:
+              - AttributeName: siteId
+                KeyType: HASH
+            Projection:
+              ProjectionType: 'ALL'
+          - IndexName: user-index
+            KeySchema:
+              - AttributeName: userId
+                KeyType: HASH
+            Projection:
+              ProjectionType: 'ALL'
+          - IndexName: s3-lookup-index
+            KeySchema:
+              - AttributeName: key
+                KeyType: HASH
+            Projection:
+              ProjectionType: 'ALL'
+

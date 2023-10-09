@@ -1,0 +1,22 @@
+export type EdealerVehicle = {
+  Rooftop: string;
+  VehicleID: string;
+  Condition: 'U' | 'N';
+  StockNum: string;
+  VIN: string;
+  Year: string;
+  Make: string;
+  Model: string;
+  Trim: string;
+  SuggestedPrice: string;
+  InternetPrice: string;
+  MSRP: string;
+  Mileage: string;
+  Transmission: string;
+  Fuel: string;
+  Body: string;
+  Drivetrain: string;
+  ExteriorColour: string;
+  ModelCode: string;
+  URL: string;
+};

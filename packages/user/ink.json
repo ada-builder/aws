@@ -1,0 +1,5 @@
+{
+  "dependsOn": [
+    "@ada-builder/rest-api"
+  ]
+}
