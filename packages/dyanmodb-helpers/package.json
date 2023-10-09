@@ -1,6 +1,6 @@
 {
   "name": "@ada-builder/aws-dynamodb",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "repository": "git@github.com:ada-builder/aws.git",
   "license": "MIT",
   "author": {
@@ -16,7 +16,7 @@
     "dev": "yarn clean && tsc -w"
   },
   "dependencies": {
-    "@ada-builder/aws-types": "^0.3.0",
+    "@ada-builder/aws-types": "^0.3.1",
     "humps": "^2.0.1",
     "lodash": "^4.17.21"
   },
