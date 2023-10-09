@@ -1,6 +1,6 @@
 {
   "name": "@ada-builder/aws-sockets",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "repository": "git@github.com:ada-builder/aws.git",
   "author": {
     "email": "ted@rebelpixel.ca",
@@ -20,8 +20,8 @@
     "deploy:prod:function": "yarn build && export AWS_PROFILE=default && sls -s prod deploy function"
   },
   "dependencies": {
-    "@ada-builder/aws-dynamodb": "^0.1.0",
-    "@ada-builder/aws-user": "^0.1.0"
+    "@ada-builder/aws-dynamodb": "^0.2.0",
+    "@ada-builder/aws-user": "^0.2.0"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.104",
