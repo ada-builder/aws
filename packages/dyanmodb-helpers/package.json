@@ -2,6 +2,7 @@
   "name": "@ada-builder/aws-dynamodb",
   "version": "0.1.0",
   "repository": "git@github.com:ada-builder/aws.git",
+  "license": "MIT",
   "author": {
     "email": "ted@rebelpixel.ca",
     "name": "Ted Sczelecki",
@@ -28,5 +29,6 @@
     "dist",
     "index.d.ts",
     "package.json"
-  ]
+  ],
+  "gitHead": "6de520ad95ba7ca44f93c9b5ed104042549d4742"
 }

@@ -2,6 +2,7 @@
   "name": "@ada-builder/aws-api",
   "version": "0.1.0",
   "repository": "git@github.com:ada-builder/aws.git",
+  "license": "MIT",
   "author": {
     "email": "ted@rebelpixel.ca",
     "name": "Ted Sczelecki",
@@ -19,5 +20,6 @@
     "serverless-plugin-common-excludes": "^4.0.0",
     "serverless-plugin-include-dependencies": "^5.0.0",
     "typescript": "^4.8.3"
-  }
+  },
+  "gitHead": "6de520ad95ba7ca44f93c9b5ed104042549d4742"
 }
