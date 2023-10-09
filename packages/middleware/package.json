@@ -24,5 +24,5 @@
     "aws-lambda": "^1.0.7",
     "typescript": "^4.8.4"
   },
-  "gitHead": "92c098ddfb22072beaadbf4fa888838ff1e814f6"
+  "gitHead": "d3a3109f89769a010ea6c642dd20a075578f20a1"
 }
