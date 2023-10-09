@@ -1,6 +1,6 @@
 {
   "name": "@ada-builder/aws-user",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "",
   "repository": "git@github.com:ada-builder/aws.git",
   "author": {
@@ -21,8 +21,8 @@
     "deploy:prod:function": "yarn build && export AWS_PROFILE=default && sls -s prod deploy function"
   },
   "dependencies": {
-    "@ada-builder/aws-dynamodb": "^0.2.0",
-    "@ada-builder/aws-middleware": "^0.2.0",
+    "@ada-builder/aws-dynamodb": "^0.3.0",
+    "@ada-builder/aws-middleware": "^0.3.0",
     "lodash": "^4.17.21",
     "uuid": "^9.0.0"
   },

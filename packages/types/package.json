@@ -1,6 +1,6 @@
 {
   "name": "@ada-builder/aws-types",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "repository": "git@github.com:ada-builder/aws.git",
   "author": {
     "email": "ted@rebelpixel.ca",
