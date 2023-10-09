@@ -33,5 +33,5 @@
     "serverless-plugin-include-dependencies": "^5.0.0",
     "typescript": "^4.8.3"
   },
-  "gitHead": "ba0daa961c3bd3840d0e54fe62432f5c83a0eb7f"
+  "gitHead": "92c098ddfb22072beaadbf4fa888838ff1e814f6"
 }
