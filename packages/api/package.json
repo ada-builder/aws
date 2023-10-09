@@ -1,13 +1,12 @@
 {
   "name": "@ada-builder/aws-api",
-  "version": "1.1.0",
+  "version": "0.1.0",
   "repository": "git@github.com:ada-builder/aws.git",
   "author": {
     "email": "ted@rebelpixel.ca",
     "name": "Ted Sczelecki",
     "url": "https://tedsczelecki.com"
   },
-  "private": true,
   "description": "",
   "main": "index.js",
   "scripts": {
